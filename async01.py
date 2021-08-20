@@ -2,7 +2,7 @@ import asyncio
 
 async def count(): # define a coroutine
     print("One")
-    await asyncio.sleep(2)
+    await asyncio.sleep(2) # any time-intensive processes that involve wait time. must be awaitable
     print("Two")
 
 async def main():

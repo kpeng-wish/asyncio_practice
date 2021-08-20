@@ -28,3 +28,4 @@ if __name__ == "__main__":
     r1, r2, r3 = asyncio.run(main())
     print()
     print(f"r1: {r1}, r2: {r2}, r3: {r3}")
+    

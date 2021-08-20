@@ -11,7 +11,7 @@ def hello_decorator():
 async def hello_native():
     print("Hello world!")
     r = await asyncio.sleep(2)
-#     print("Hello again!")
+    print("Hello again!")
 
 
 # 获取EventLoop:
