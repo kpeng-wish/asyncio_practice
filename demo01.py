@@ -1,8 +1,10 @@
+# demo-01, sync version 
+
 import time
 
 def count():
     print("One")
-    time.sleep(2)
+    time.sleep(1)
     print("Two")
 
 def main():

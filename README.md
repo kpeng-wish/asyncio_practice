@@ -1,3 +1,3 @@
-# asyncio_practice
+# Python asyncio practice
 
-asyncio_practice
+asyncio practice code demos.

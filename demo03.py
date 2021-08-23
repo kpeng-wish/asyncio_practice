@@ -1,4 +1,5 @@
-# generator
+# demo-03, generator usage
+
 def consumer():
     r = ''
     while True:

@@ -1,3 +1,5 @@
+# demo-04, yield usage
+
 def gen():
     for c in 'AB':
         yield c

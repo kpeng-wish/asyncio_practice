@@ -1,3 +1,5 @@
+# demo-05, yield from usage
+
 from collections import namedtuple
 Result = namedtuple('Result', 'count average')
 
