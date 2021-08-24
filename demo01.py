@@ -1,4 +1,4 @@
-# demo-01, sync version 
+# demo-01, normal sync code.
 
 import time
 
@@ -13,6 +13,7 @@ def main():
 
 if __name__ == "__main__":
     s = time.perf_counter()
+    
     main()
 
     elapsed = time.perf_counter() - s

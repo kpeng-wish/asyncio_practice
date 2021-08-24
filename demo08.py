@@ -1,38 +1,28 @@
+import requests
 import asyncio
-import random
 import time
 
-async def part1(n: int) -> str:
-    i = random.randint(0, 10)
-    print(f"part1({n}) sleeping for {i} seconds.")
-    await asyncio.sleep(i)
-    result = f"result{n}-1"
-    print(f"Returning part1({n}) == {result}.")
-    return result
+async def counter():
+    now = time.time()
+    print("Started counter")
+    for i in range(0, 10):
+        last = now
+        await asyncio.sleep(0.001)
+        now = time.time()
+        print(f"{i}: Was asleep for {now - last}s")
 
-async def part2(n: int, arg: str) -> str:
-    i = random.randint(0, 10)
-    print(f"part2{n, arg} sleeping for {i} seconds.")
-    await asyncio.sleep(i)
-    result = f"result{n}-2 derived from {arg}"
-    print(f"Returning part2{n, arg} == {result}.")
-    return result
+# call sync code in async context, no error but blocked.
+async def main():
+    t = asyncio.get_event_loop().create_task(counter())
 
-async def chain(n: int) -> None:
-    start = time.perf_counter()
-    p1 = await part1(n)
-    p2 = await part2(n, p1)
-    end = time.perf_counter() - start
-    print(f"-->Chained result{n} => {p2} (took {end:0.2f} seconds).")
+    await asyncio.sleep(0)
 
-async def main(*args):
-    await asyncio.gather(*(chain(n) for n in args))
+    print("Sending HTTP request")
 
-if __name__ == "__main__":
-    import sys
-    random.seed(444)
-    args = [1, 2, 3] if len(sys.argv) == 1 else map(int, sys.argv[1:])
-    start = time.perf_counter()
-    asyncio.run(main(*args))
-    end = time.perf_counter() - start
-    print(f"Program finished in {end:0.2f} seconds.")
+    r = requests.get('http://example.com') # synchronous IO call, when calling this, counter paused
+
+    print(f"Got HTTP response with status {r.status_code}")
+
+    await t
+
+asyncio.get_event_loop().run_until_complete(main())

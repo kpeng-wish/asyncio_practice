@@ -1,5 +1,5 @@
-# demo-02, async version 
-
+# demo-02, async version of demo-01
+import time
 import asyncio
 
 async def count(): # define a coroutine
@@ -10,8 +10,8 @@ async def count(): # define a coroutine
 async def main():
     await asyncio.gather(count(), count(), count())
 
+
 if __name__ == "__main__":
-    import time
     s = time.perf_counter()
 
     asyncio.run(main()) # Python 3.7+

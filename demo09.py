@@ -11,16 +11,21 @@ async def counter():
         now = time.time()
         print(f"{i}: Was asleep for {now - last}s")
 
-# call sync code in async context, no error but blocked.
-
 async def main():
     t = asyncio.get_event_loop().create_task(counter())
 
     await asyncio.sleep(0)
 
-    print("Sending HTTP request")
-    r = requests.get('http://example.com') # synchronous IO call, when calling this, counter paused
-    print(f"Got HTTP response with status {r.status_code}")
+    def send_request():
+        print("Sending HTTP request")
+        r = requests.get('http://example.com')
+        print(f"Got HTTP response with status {r.status_code}")
+    '''
+    run_in_executor, counter was not blocked by the HTTP request.
+    run in the default loop's executor with first parm as None
+    a good way to use sync code in the context of async
+    '''
+    await asyncio.get_event_loop().run_in_executor(None, send_request)
 
     await t
 

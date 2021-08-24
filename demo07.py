@@ -1,12 +1,14 @@
-# demo-07, event loop
+# demo-07, event loop demo
 
 import asyncio  
-
 import time
+
+
 async def compute(x, y):  
+    # coroutine is running
     print("Compute {} + {}...".format(x, y))
-    await asyncio.sleep(1   .0)
-    
+    # coroutine is suspended here
+    await asyncio.sleep(1.0)
     return x + y
 
 async def print_sum(x, y):  
@@ -17,11 +19,13 @@ start = time.time()
 
 loop = asyncio.get_event_loop() 
 
-tasks = [  
-    asyncio.ensure_future(print_sum(0, 0)),
+# create task object, which is the execute unit in the async context, registered into the event loop.
+tasks = [
+    asyncio.ensure_future(print_sum(0, 0)), 
     asyncio.ensure_future(print_sum(1, 1)),
     asyncio.ensure_future(print_sum(2, 2)),
 ]
+
 loop.run_until_complete(asyncio.wait(tasks))  
 
 loop.close()  

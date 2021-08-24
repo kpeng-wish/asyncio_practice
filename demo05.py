@@ -1,9 +1,9 @@
-# demo-05, yield from usage
+# demo-05, yield and yield from compare
 
 from collections import namedtuple
 Result = namedtuple('Result', 'count average')
 
-# the subgenerator
+# the subgenerator, calculate the average
 def averager():
     total = 0.0
     count = 0
@@ -17,12 +17,14 @@ def averager():
         average = total / count
     return Result(count, average)
 
-# the delegating generator
+
+# the delegating generator, yield from 允许子生成器直接从调用者接收其发送的信息或者抛出调用时遇到的异常，并且返回给委派生成器一个值。
 def grouper(results, key):
     while True:
-        #只有当生成器averager()结束，才会返回结果给results赋值
+        # 只有当生成器averager()结束，才会返回结果给results赋值
         results[key] = yield from averager()
-        
+
+
 def main(data):
     results = {}
     for key, values in data.items():
@@ -33,14 +35,15 @@ def main(data):
         group.send(None)
     report(results)
 
-#如果不使用yield from，仅仅通过yield实现相同的效果，如下：
+
+# 如果不使用yield from，仅仅通过yield实现相同的效果
 def main2(data):
     for key, values in data.items():
         aver = averager()
         next(aver)
         for value in values:
             aver.send(value)
-        try: #通过异常接受返回的数据
+        try:
             aver.send(None)
         except Exception as e:
             result = e.value
@@ -59,5 +62,7 @@ data = {
 }
 
 if __name__ == '__main__':
+
     main(data)
+
     main2(data)
