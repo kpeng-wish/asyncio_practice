@@ -1,105 +1,27 @@
-"""Asynchronously get links embedded in multiple pages' HMTL."""
-
+import requests
 import asyncio
-import logging
-import re
-import sys
-from typing import IO
-import urllib.error
-import urllib.parse
+import time
 
-import aiofiles
-import aiohttp
-from aiohttp import ClientSession
+async def counter():
+    now = time.time()
+    print("Started counter")
+    for i in range(0, 10):
+        last = now
+        await asyncio.sleep(0.001)
+        now = time.time()
+        print(f"{i}: Was asleep for {now - last}s")
 
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
-    level=logging.DEBUG,
-    datefmt="%H:%M:%S",
-    stream=sys.stderr,
-)
-logger = logging.getLogger("areq")
-logging.getLogger("chardet.charsetprober").disabled = True
+# call sync code in async context, no error but blocked.
 
-HREF_RE = re.compile(r'href="(.*?)"')
+async def main():
+    t = asyncio.get_event_loop().create_task(counter())
 
-async def fetch_html(url: str, session: ClientSession, **kwargs) -> str:
-    """GET request wrapper to fetch page HTML.
+    await asyncio.sleep(0)
 
-    kwargs are passed to `session.request()`.
-    """
+    print("Sending HTTP request")
+    r = requests.get('http://example.com') # synchronous IO call, when calling this, counter paused
+    print(f"Got HTTP response with status {r.status_code}")
 
-    resp = await session.request(method="GET", url=url, **kwargs)
-    resp.raise_for_status()
-    logger.info("Got response [%s] for URL: %s", resp.status, url)
-    html = await resp.text()
-    return html
+    await t
 
-async def parse(url: str, session: ClientSession, **kwargs) -> set:
-    """Find HREFs in the HTML of `url`."""
-    found = set()
-    try:
-        html = await fetch_html(url=url, session=session, **kwargs)
-    except (
-        aiohttp.ClientError,
-        aiohttp.http_exceptions.HttpProcessingError,
-    ) as e:
-        logger.error(
-            "aiohttp exception for %s [%s]: %s",
-            url,
-            getattr(e, "status", None),
-            getattr(e, "message", None),
-        )
-        return found
-    except Exception as e:
-        logger.exception(
-            "Non-aiohttp exception occured:  %s", getattr(e, "__dict__", {})
-        )
-        return found
-    else:
-        for link in HREF_RE.findall(html):
-            try:
-                abslink = urllib.parse.urljoin(url, link)
-            except (urllib.error.URLError, ValueError):
-                logger.exception("Error parsing URL: %s", link)
-                pass
-            else:
-                found.add(abslink)
-        logger.info("Found %d links for %s", len(found), url)
-        return found
-
-async def write_one(file: IO, url: str, **kwargs) -> None:
-    """Write the found HREFs from `url` to `file`."""
-    res = await parse(url=url, **kwargs)
-    if not res:
-        return None
-    async with aiofiles.open(file, "a") as f:
-        for p in res:
-            await f.write(f"{url}\t{p}\n")
-        logger.info("Wrote results for source URL: %s", url)
-
-async def bulk_crawl_and_write(file: IO, urls: set, **kwargs) -> None:
-    """Crawl & write concurrently to `file` for multiple `urls`."""
-    async with ClientSession() as session:
-        tasks = []
-        for url in urls:
-            tasks.append(
-                write_one(file=file, url=url, session=session, **kwargs)
-            )
-        await asyncio.gather(*tasks)
-
-if __name__ == "__main__":
-    import pathlib
-    import sys
-
-    assert sys.version_info >= (3, 7), "Script requires Python 3.7+."
-    here = pathlib.Path(__file__).parent
-
-    with open(here.joinpath("demo09.txt")) as infile:
-        urls = set(map(str.strip, infile))
-
-    outpath = here.joinpath("foundurls.txt")
-    with open(outpath, "w") as outfile:
-        outfile.write("source_url\tparsed_url\n")
-
-    asyncio.run(bulk_crawl_and_write(file=outpath, urls=urls))
+asyncio.get_event_loop().run_until_complete(main())
